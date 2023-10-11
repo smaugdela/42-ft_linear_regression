@@ -14,44 +14,55 @@ def	cost_function():
 	"""
 	pass
 
-def gradient_descent(learning_rate, mileage_list, price_list, max_iter, epsilon):
-	"""
-	Main logic for learning algorithm given learning_rate (alpha) and returns a tuple of the computed theta0 and theta1.
-	max_iter is the maximum number of iteration that will be run, to avoid infinite loop in case of divergence.
-	epsilon is the threshold under which the gradient descent will consider to be precise enough and stop there.
-	"""
+# This website solution's : https://www.educative.io/answers/a-deep-dive-into-linear-regression-3-way-implementation
+def estimate_coef(x, y): 
+    n = np.size(x) 
+    m_x, m_y = np.mean(x), np.mean(y) 
 
-	theta0 = theta1 = temp0 = temp1 = 0
+    SS_xy = np.sum(y*x) - n*m_y*m_x 
+    SS_xx = np.sum(x*x) - n*m_x*m_x 
 
-	m = len(mileage_list)
-	coef = learning_rate / m
+    theta_1 = SS_xy / SS_xx 
+    theta_0 = m_y - theta_1*m_x 
 
-	i = 0
-	while (i < max_iter):
+    return(theta_0, theta_1) 
 
-		error = 0
-		for (mileage, price) in zip(mileage_list, price_list):
-			error += (get_estimate(mileage, theta0, theta1) - price)
+# def gradient_descent(learning_rate, mileage_list, price_list, max_iter, epsilon):
+# 	"""
+# 	Main logic for learning algorithm given learning_rate (alpha) and returns a tuple of the computed theta0 and theta1.
+# 	max_iter is the maximum number of iteration that will be run, to avoid infinite loop in case of divergence.
+# 	epsilon is the threshold under which the gradient descent will consider to be precise enough and stop there.
+# 	"""
 
-		temp0 = coef * error
+# 	theta0 = theta1 = temp0 = temp1 = 0
 
-		error = 0
-		for (mileage, price) in zip(mileage_list, price_list):
-			error += (get_estimate(mileage, theta0, theta1) - price) * mileage
+# 	m = len(mileage_list)
+# 	coef = learning_rate / m
 
-		temp1 = coef * error
+# 	i = 0
 
-		theta0 = theta0 - temp0
-		theta1 = theta1 - temp1
-		# theta0 = temp0
-		# theta1 = temp1
+# 	while (i < max_iter):
+# 		error = 0
+# 		for (mileage, price) in zip(mileage_list, price_list):
+# 			error += (get_estimate(mileage, theta0, theta1) - price)
 
-		# if (abs(temp0) < epsilon and abs(temp1) < epsilon):
-		# 	break
+# 		temp0 = coef * error
+
+# 		error = 0
+# 		for (mileage, price) in zip(mileage_list, price_list):
+# 			error += (get_estimate(mileage, theta0, theta1) - price) * mileage
+
+# 		temp1 = coef * error
+
+# 		theta0 = theta0 - temp0
+# 		theta1 = theta1 - temp1
+
+# 		if abs(temp0) < epsilon and abs(temp1) < epsilon:
+# 			break
 		
-		i += 1
+# 		i += 1
 
-	return (theta0, theta1)
+# 	return (theta0, theta1)
 
 if __name__ == "__main__":
 
@@ -66,7 +77,8 @@ if __name__ == "__main__":
 
 	print("Training...")
 
-	(theta0, theta1) = gradient_descent(1e-10, data['km'], data['price'], 10000, 0.1)
+	# (theta0, theta1) = gradient_descent(0.00001, data['km'], data['price'], 1000, 0.1)
+	(theta0, theta1) = estimate_coef(data['km'], data['price'])
 
 	print(theta0, theta1)
 
