@@ -2,83 +2,71 @@ import pandas
 import matplotlib.pyplot as plt
 import numpy as np
 
-def	get_estimate(mileage, theta0, theta1):
-	"""
-	Return estimate value of price given mileage, theta0 and theta1
-	"""
-	return ((theta1 * mileage) + theta0)
+# Least squares method
+def estimate_coef(x, y):
+	n = np.size(x)
+	m_x, m_y = np.mean(x), np.mean(y)
 
-def	cost_function():
-	"""
-	Compute the cost function of a given x, y list for fixed theta0, theta1.
-	"""
-	pass
+	SS_xy = np.sum(y*x) - n*m_y*m_x
+	SS_xx = np.sum(x*x) - n*m_x*m_x
 
-# This website solution's : https://www.educative.io/answers/a-deep-dive-into-linear-regression-3-way-implementation
-def estimate_coef(x, y): 
-    n = np.size(x) 
-    m_x, m_y = np.mean(x), np.mean(y) 
+	theta_1 = SS_xy / SS_xx
+	theta_0 = m_y - theta_1*m_x
 
-    SS_xy = np.sum(y*x) - n*m_y*m_x 
-    SS_xx = np.sum(x*x) - n*m_x*m_x 
+	return(theta_0, theta_1)
 
-    theta_1 = SS_xy / SS_xx 
-    theta_0 = m_y - theta_1*m_x 
+# Gradient descent method
+def gradient_descent(x: np.array, y: np.array, learning_rate=0.0001, iterations=10000, precision=1e-6):
 
-    return(theta_0, theta_1) 
+		if len(x) != len(y):
+			raise ValueError("The dataset is invalid. Their length differ")
 
-# def gradient_descent(learning_rate, mileage_list, price_list, max_iter, epsilon):
-# 	"""
-# 	Main logic for learning algorithm given learning_rate (alpha) and returns a tuple of the computed theta0 and theta1.
-# 	max_iter is the maximum number of iteration that will be run, to avoid infinite loop in case of divergence.
-# 	epsilon is the threshold under which the gradient descent will consider to be precise enough and stop there.
-# 	"""
+		norm_theta_0 = 0.0
+		norm_theta_1 = 0.0
 
-# 	theta0 = theta1 = temp0 = temp1 = 0
+		# Normalizing data
+		max_x = max(x)
+		min_x = min(x)
+		x = (x - min_x) / (max_x - min_x)
+		max_y = max(y)
+		min_y = min(y)
+		y = (y - min_y) / (max_y - min_y)
 
-# 	m = len(mileage_list)
-# 	coef = learning_rate / m
+		m = float(len(x))
 
-# 	i = 0
+		for i in range(iterations):
 
-# 	while (i < max_iter):
-# 		error = 0
-# 		for (mileage, price) in zip(mileage_list, price_list):
-# 			error += (get_estimate(mileage, theta0, theta1) - price)
+			y_pred = norm_theta_0 + (norm_theta_1 * x) 
+			
+			tmp_theta_0 = learning_rate / (2 * m) * np.sum(y_pred - y)
+			tmp_theta_1 = learning_rate / (2 * m) * np.sum((y_pred - y) * x)
 
-# 		temp0 = coef * error
+			norm_theta_0 = norm_theta_0 - tmp_theta_0
+			norm_theta_1 = norm_theta_1 - tmp_theta_1
 
-# 		error = 0
-# 		for (mileage, price) in zip(mileage_list, price_list):
-# 			error += (get_estimate(mileage, theta0, theta1) - price) * mileage
-
-# 		temp1 = coef * error
-
-# 		theta0 = theta0 - temp0
-# 		theta1 = theta1 - temp1
-
-# 		if abs(temp0) < epsilon and abs(temp1) < epsilon:
-# 			break
+			if (abs(tmp_theta_0) < precision and abs(tmp_theta_1) < precision):
+				break
 		
-# 		i += 1
+		# Denormalizing final parameters
+		theta_0 = norm_theta_0 * (max_y - min_y) + min_y
+		theta_1 = norm_theta_1 * (max_y - min_y) / (max_x - min_x)
 
-# 	return (theta0, theta1)
+		return theta_0, theta_1
 
 if __name__ == "__main__":
 
 	try:
 		data = pandas.read_csv("data.csv")
-		if (len(data['price']) != len(data['km'])):
-			raise Exception("Bad csv.")
-
+		if (len(data['price']) != len(data['km']) or len(data["km"]) == 0):
+			raise Exception("Missing rows.")
 	except:
 		print("Missing or ill-formed data.csv file.")
 		exit(-1)
 
 	print("Training...")
 
-	# (theta0, theta1) = gradient_descent(0.00001, data['km'], data['price'], 1000, 0.1)
-	(theta0, theta1) = estimate_coef(data['km'], data['price'])
+	(theta0, theta1) = gradient_descent(data["km"], data["price"])
+	# (theta0, theta1) = estimate_coef(data['km'], data['price'])
 
 	print(theta0, theta1)
 
@@ -101,10 +89,9 @@ if __name__ == "__main__":
 		df = pandas.DataFrame(data)
 		df.set_index("parameter", inplace=True)
 		df.to_csv("parameters.csv")
-
 	except:
 		print("Could not write to parameters.csv file.")
 		exit(-1)
 
-	print("done!")
+	print("...done!")
 	exit(0)
