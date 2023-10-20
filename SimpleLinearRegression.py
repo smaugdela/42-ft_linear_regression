@@ -73,7 +73,7 @@ class SimpleLinearRegression:
 	def predict(self, x):
 		return self.theta_0 + (self.theta_1 * x)
 
-	def import_coef(self, file_name: str = 'regressor'):
+	def import_coef(self, file_name: str = 'simple_regressor.pkl'):
 		try:
 			with open(file_name, 'rb') as file:
 				self.theta_0 = pickle.load(file)
@@ -82,7 +82,7 @@ class SimpleLinearRegression:
 		except:
 			print("No file found.")
 
-	def export_coef(self, file_name: str = 'regressor'):
+	def export_coef(self, file_name: str = 'simple_regressor.pkl'):
 		try:
 			with open(file_name, 'wb') as file:
 				pickle.dump(self.theta_0, file)
