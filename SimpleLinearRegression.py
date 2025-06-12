@@ -3,17 +3,19 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import pickle
 
+
 class SimpleLinearRegression:
 
-	def __init__(self) -> None:
+
+	def __init__(self):
 		self.theta_0 = 0.0
 		self.theta_1 = 0.0
 		self.r2_score = 0.0
 
+
 	def fit(self, x: np.array, y: np.array, learning_rate=0.1, iterations=10000, precision=1e-6, visualizer=False):
 		"""
 		Finds the best parameters theta_0 and theta_1 (bias and weight) for given input X and output y, using gradient descent.
-		Another way could be to estimate the coefficients using the pricniple of least squares.
 		"""
 
 		if len(x) != len(y):
@@ -25,9 +27,13 @@ class SimpleLinearRegression:
 		# Normalizing data
 		max_x = max(x)
 		min_x = min(x)
+		if max_x == min_x:
+			raise ValueError("The dataset is invalid. The input data has no variance.")
 		x = (x - min_x) / (max_x - min_x)
 		max_y = max(y)
 		min_y = min(y)
+		if max_y == min_y:
+			raise ValueError("The dataset is invalid. The output data has no variance.")
 		y = (y - min_y) / (max_y - min_y)
 
 		m = float(len(x))
@@ -51,9 +57,9 @@ class SimpleLinearRegression:
 				fig.canvas.flush_events()
 
 			y_pred = norm_theta_0 + (norm_theta_1 * x)
-			
-			tmp_theta_0 = learning_rate / (2 * m) * np.sum(y_pred - y)
-			tmp_theta_1 = learning_rate / (2 * m) * np.sum((y_pred - y) * x)
+
+			tmp_theta_0 = learning_rate / m * np.sum(y_pred - y)
+			tmp_theta_1 = learning_rate / m * np.sum((y_pred - y) * x)
 
 			norm_theta_0 = norm_theta_0 - tmp_theta_0
 			norm_theta_1 = norm_theta_1 - tmp_theta_1
@@ -67,26 +73,29 @@ class SimpleLinearRegression:
 		self.r2_score =  1 - (np.sum((y - y_pred) ** 2) / np.sum((y - y_mean) ** 2))
 
 		# Denormalizing final parameters
-		self.theta_0 = norm_theta_0 * (max_y - min_y) + min_y
 		self.theta_1 = norm_theta_1 * (max_y - min_y) / (max_x - min_x)
+		self.theta_0 = self.theta_0 = norm_theta_0 * (max_y - min_y) + min_y - self.theta_1 * min_x
 
-	def predict(self, x):
+
+	def predict(self, x: float) -> float:
 		return self.theta_0 + (self.theta_1 * x)
 
-	def import_coef(self, file_name: str = 'simple_regressor.pkl'):
+
+	def import_coef(self, file_name: str = '.coefs.pkl'):
 		try:
 			with open(file_name, 'rb') as file:
 				self.theta_0 = pickle.load(file)
 				self.theta_1 = pickle.load(file)
 				self.r2_score = pickle.load(file)
 		except:
-			print("No file found.")
+			print("No coefficients found, please train the model first or provide a valid file.")
 
-	def export_coef(self, file_name: str = 'simple_regressor.pkl'):
+
+	def export_coef(self, file_name: str = '.coefs.pkl'):
 		try:
 			with open(file_name, 'wb') as file:
 				pickle.dump(self.theta_0, file)
 				pickle.dump(self.theta_1, file)
 				pickle.dump(self.r2_score, file)
 		except:
-			print("Could not export to file.")
+			print("Error: Could not export to file.")
